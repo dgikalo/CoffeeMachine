@@ -1,36 +1,53 @@
 package org.example;
 
-import javax.print.attribute.standard.Finishings;
-import java.io.IOException;
+import java.util.Scanner;
 
-import java.io.BufferedReader;
-import java.io.InputStreamReader;
 
-public class Main {
-    public static int FindMinima(int a, int b, int c) {
-        int minima = Math.min(a, b);
-        minima = Math.min(minima, c);
+enum Option {
+    BUY,
+    FILL,
+    TAKE
+}
 
-        return minima;
-    }
+class CoffeeDrink {
+    int waterAmount;
+    int milkAmount;
+    int coffeeBeans;
+    int cost;
+}
 
-    public static void main(String[] args) {
+final class Espresso extends CoffeeDrink {
+    public Espresso() {
+        this.waterAmount = 250;
+        this.milkAmount = 0;
+        this.coffeeBeans = 16;
+        this.cost = 4;
     }
 }
 
+final class Latte extends CoffeeDrink {
+    public Latte() {
+        this.waterAmount = 350;
+        this.milkAmount = 75;
+        this.coffeeBeans = 20;
+        this.cost = 7;
+    }
+}
 
-class CoffeeMachine {
-    // Initial amount in milliliters
+final class Cappuccino extends CoffeeDrink {
+    public Cappuccino() {
+        this.waterAmount = 200;
+        this.milkAmount = 100;
+        this.coffeeBeans = 12;
+        this.cost = 6;
+    }
+}
+
+public class CoffeeMachine {
     private int waterAmount;
     private int milkAmount;
-
-    // Initial amount of coffee beans in grams
     private int coffeeBeansAmount;
-
-    // Initial amount of money in dollars
     private int moneyAmount;
-
-    // Initial number of the disposable cups in pieces
     private int disposableCupsNumber;
 
     public CoffeeMachine() {
@@ -41,153 +58,87 @@ class CoffeeMachine {
         this.disposableCupsNumber = 9;
     }
 
-    public int getWaterAmount() {
-        return waterAmount;
+    private void PrintCoffeeMachineState() {
+        System.out.println("The coffee machine has:");
+        System.out.printf("%d ml of water\n", waterAmount);
+        System.out.printf("%d ml of milk\n", milkAmount);
+        System.out.printf("%d g of coffee beans\n", coffeeBeansAmount);
+        System.out.printf("%d disposable cups\n", disposableCupsNumber);
+        System.out.printf("$%d of money\n", moneyAmount);
     }
 
-    public void setWaterAmount(int waterAmount) {
-        this.waterAmount = waterAmount;
+    private static String ReadValue() {
+        return new Scanner(System.in).nextLine();
     }
 
-    public int getMilkAmount() {
-        return milkAmount;
+    private static void HandleOrder(CoffeeMachine coffeeMachine, CoffeeDrink coffeeDrink) {
+        coffeeMachine.waterAmount -= coffeeDrink.waterAmount;
+        coffeeMachine.milkAmount -= coffeeDrink.milkAmount;
+        coffeeMachine.coffeeBeansAmount -= coffeeDrink.coffeeBeans;
+        coffeeMachine.moneyAmount += coffeeDrink.cost;
+        --coffeeMachine.disposableCupsNumber;
     }
 
-    public void setMilkAmount(int milkAmount) {
-        this.milkAmount = milkAmount;
-    }
+    public static void main(String[] args) {
+        CoffeeMachine coffeeMachine = new CoffeeMachine();
+        coffeeMachine.PrintCoffeeMachineState();
 
-    public int getCoffeeBeansAmount() {
-        return coffeeBeansAmount;
-    }
+        System.out.println();
+        System.out.println("Write action (buy, fill, take)");
 
-    public void setCoffeeBeansAmount(int coffeeBeansAmount) {
-        this.coffeeBeansAmount = coffeeBeansAmount;
-    }
+        String enteredOption = ReadValue().toUpperCase();
+        Option validatedOption;
 
-    public int getMoneyAmount() {
-        return moneyAmount;
-    }
+        try {
+            validatedOption = Option.valueOf(enteredOption);
+        } catch (IllegalArgumentException exception) {
+            System.out.printf("%s is not supported option", enteredOption);
+            return;
+        }
 
-    public void setMoneyAmount(int moneyAmount) {
-        this.moneyAmount = moneyAmount;
-    }
+        switch (validatedOption) {
+            case BUY:
+                System.out.println("What do you want to buy? 1 - espresso, 2 - latte, 3 - cappuccino:");
+                int coffeeDrinkTypeOrder = Integer.parseInt(ReadValue());
 
-    public int getDisposableCupsNumber() {
-        return disposableCupsNumber;
-    }
+                switch (coffeeDrinkTypeOrder) {
+                    case 1:
+                        CoffeeDrink espresso = new Espresso();
+                        HandleOrder(coffeeMachine, espresso);
+                        break;
+                    case 2:
+                        CoffeeDrink latte = new Latte();
+                        HandleOrder(coffeeMachine, latte);
+                        break;
+                    case 3:
+                        CoffeeDrink cappuccino = new Cappuccino();
+                        HandleOrder(coffeeMachine, cappuccino);
+                        break;
+                }
+                break;
 
-    public void setDisposableCupsNumber(int disposableCupsNumber) {
-        this.disposableCupsNumber = disposableCupsNumber;
-    }
-}
+            case FILL:
+                System.out.println("Write how many ml of water you want to add:");
+                coffeeMachine.waterAmount += Integer.parseInt(ReadValue());
 
-abstract class CoffeeDrink {
-    protected int waterAmount;
-    protected int milkAmount;
-    protected int coffeeBeansAmount;
-    protected int price;
+                System.out.println("Write how many ml of milk you want to add:");
+                coffeeMachine.milkAmount += Integer.parseInt(ReadValue());
 
-    public int getWaterAmount() {
-        return waterAmount;
-    }
+                System.out.println("Write how many grams of coffee beans you want to add:");
+                coffeeMachine.coffeeBeansAmount += Integer.parseInt(ReadValue());
 
-    public int getMilkAmount() {
-        return milkAmount;
-    }
+                System.out.println("Write how many disposable cups you want to add:");
+                coffeeMachine.disposableCupsNumber += Integer.parseInt(ReadValue());
+                break;
 
-    public int getCoffeeBeansAmount() {
-        return coffeeBeansAmount;
-    }
+            case TAKE:
+                System.out.printf("I gave you $%d\n", coffeeMachine.moneyAmount);
 
-    public int getPrice() {
-        return price;
-    }
-}
+                coffeeMachine.moneyAmount = 0;
+                break;
+        }
 
-class Cappuccino extends CoffeeDrink {
-    public Cappuccino() {
-        super.waterAmount = 200;
-        super.milkAmount = 100;
-        super.coffeeBeansAmount = 12;
-        super.price = 6;
-    }
-
-    @Override
-    public int getWaterAmount() {
-        return super.getWaterAmount();
-    }
-
-    @Override
-    public int getMilkAmount() {
-        return super.getMilkAmount();
-    }
-
-    @Override
-    public int getCoffeeBeansAmount() {
-        return super.getCoffeeBeansAmount();
-    }
-
-    @Override
-    public int getPrice() {
-        return super.getPrice();
-    }
-}
-
-class Espresso extends CoffeeDrink {
-    public Espresso() {
-        super.waterAmount = 250;
-        super.milkAmount = 0;
-        super.coffeeBeansAmount = 16;
-        super.price = 4;
-    }
-
-    @Override
-    public int getWaterAmount() {
-        return super.getWaterAmount();
-    }
-
-    @Override
-    public int getMilkAmount() {
-        return super.getMilkAmount();
-    }
-
-    @Override
-    public int getCoffeeBeansAmount() {
-        return super.getCoffeeBeansAmount();
-    }
-
-    @Override
-    public int getPrice() {
-        return super.getPrice();
-    }
-}
-
-class Latte extends CoffeeDrink {
-    public Latte() {
-        super.waterAmount = 350;
-        super.milkAmount = 75;
-        super.coffeeBeansAmount = 20;
-        super.price = 7;
-    }
-
-    @Override
-    public int getWaterAmount() {
-        return super.getWaterAmount();
-    }
-
-    @Override
-    public int getMilkAmount() {
-        return super.getMilkAmount();
-    }
-
-    @Override
-    public int getCoffeeBeansAmount() {
-        return super.getCoffeeBeansAmount();
-    }
-
-    @Override
-    public int getPrice() {
-        return super.getPrice();
+        System.out.println();
+        coffeeMachine.PrintCoffeeMachineState();
     }
 }
