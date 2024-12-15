@@ -58,20 +58,24 @@ public class CoffeeMachine {
         this.disposableCupsNumber = 9;
     }
 
-    private void PrintCoffeeMachineState() {
+    private void PrintCoffeeMachineStatus(CoffeeMachine coffeeMachine) {
         System.out.println("The coffee machine has:");
-        System.out.printf("%d ml of water\n", waterAmount);
-        System.out.printf("%d ml of milk\n", milkAmount);
-        System.out.printf("%d g of coffee beans\n", coffeeBeansAmount);
-        System.out.printf("%d disposable cups\n", disposableCupsNumber);
-        System.out.printf("$%d of money\n", moneyAmount);
+        System.out.printf("%d ml of water\n", coffeeMachine.waterAmount);
+        System.out.printf("%d ml of milk\n", coffeeMachine.milkAmount);
+        System.out.printf("%d g of coffee beans\n", coffeeMachine.coffeeBeansAmount);
+        System.out.printf("%d disposable cups\n", coffeeMachine.disposableCupsNumber);
+        System.out.printf("$%d of money\n", coffeeMachine.moneyAmount);
     }
 
     private static String ReadValue() {
         return new Scanner(System.in).nextLine();
     }
 
-    private static void HandleOrder(CoffeeMachine coffeeMachine, CoffeeDrink coffeeDrink) {
+    private static void RecalculateBalances(CoffeeMachine coffeeMachine, int moneyAmount) {
+        coffeeMachine.moneyAmount = moneyAmount;
+    }
+
+    private static void RecalculateBalances(CoffeeMachine coffeeMachine, CoffeeDrink coffeeDrink) {
         coffeeMachine.waterAmount -= coffeeDrink.waterAmount;
         coffeeMachine.milkAmount -= coffeeDrink.milkAmount;
         coffeeMachine.coffeeBeansAmount -= coffeeDrink.coffeeBeans;
@@ -81,7 +85,7 @@ public class CoffeeMachine {
 
     public static void main(String[] args) {
         CoffeeMachine coffeeMachine = new CoffeeMachine();
-        coffeeMachine.PrintCoffeeMachineState();
+        coffeeMachine.PrintCoffeeMachineStatus(coffeeMachine);
 
         System.out.println();
         System.out.println("Write action (buy, fill, take)");
@@ -104,15 +108,15 @@ public class CoffeeMachine {
                 switch (coffeeDrinkTypeOrder) {
                     case 1:
                         CoffeeDrink espresso = new Espresso();
-                        HandleOrder(coffeeMachine, espresso);
+                        RecalculateBalances(coffeeMachine, espresso);
                         break;
                     case 2:
                         CoffeeDrink latte = new Latte();
-                        HandleOrder(coffeeMachine, latte);
+                        RecalculateBalances(coffeeMachine, latte);
                         break;
                     case 3:
                         CoffeeDrink cappuccino = new Cappuccino();
-                        HandleOrder(coffeeMachine, cappuccino);
+                        RecalculateBalances(coffeeMachine, cappuccino);
                         break;
                 }
                 break;
@@ -134,11 +138,11 @@ public class CoffeeMachine {
             case TAKE:
                 System.out.printf("I gave you $%d\n", coffeeMachine.moneyAmount);
 
-                coffeeMachine.moneyAmount = 0;
+                RecalculateBalances(coffeeMachine, 0);
                 break;
         }
 
         System.out.println();
-        coffeeMachine.PrintCoffeeMachineState();
+        coffeeMachine.PrintCoffeeMachineStatus(coffeeMachine);
     }
 }
