@@ -6,13 +6,8 @@ import java.util.EnumMap;
 import java.util.Scanner;
 
 
-enum MainMenuOption {
-    BUY,
-    FILL,
-    TAKE,
-    REMAINING,
-    EXIT
-}
+
+
 
 
 enum Resource {
@@ -75,14 +70,42 @@ final class CoffeeMachine {
     public void updateMoneyAmount(int value) {
         this.resources.put(Resource.MONEY, value);
     }
+}
 
-    public void displayStatus() {
+
+enum MainMenuOption {
+    BUY,
+    FILL,
+    TAKE,
+    REMAINING,
+    EXIT
+}
+
+
+final class MainMenuOperations {
+    public static void buyOption(CoffeeMachine machine) {
+
+    }
+
+    public static void fillOption() {
+
+    }
+
+    public static void takeOption(CoffeeMachine machine) {
+        machine.updateMoneyAmount(0);
+    }
+
+    public static void remainingOption(CoffeeMachine machine) {
         System.out.println("The coffee machine has:");
-        System.out.printf("%d ml of water\n", this.getWaterAmount());
-        System.out.printf("%d ml of milk\n", this.getMilkAmount());
-        System.out.printf("%d g of coffee beans\n", this.getCoffeeBeansAmount());
-        System.out.printf("%d disposable cups\n", this.getDisposableCupsNumber());
-        System.out.printf("$%d of money\n", this.getMoneyAmount());
+        System.out.printf("%d ml of water\n", machine.getWaterAmount());
+        System.out.printf("%d ml of milk\n", machine.getMilkAmount());
+        System.out.printf("%d g of coffee beans\n", machine.getCoffeeBeansAmount());
+        System.out.printf("%d disposable cups\n", machine.getDisposableCupsNumber());
+        System.out.printf("$%d of money\n", machine.getMoneyAmount());
+    }
+
+    public static void exitOption() {
+        System.exit(0);
     }
 }
 
@@ -92,21 +115,27 @@ final class MainMenuProcessor {
         switch (option) {
             case BUY -> System.out.println("> Buy");
             case FILL -> System.out.println(">> Fill");
-            case TAKE -> System.out.println(">>> Take");
-            case REMAINING -> machine.displayStatus();
-            case EXIT -> System.exit(0);
+            case TAKE -> MainMenuOperations.takeOption(machine);
+            case REMAINING -> MainMenuOperations.remainingOption(machine);
+            case EXIT -> MainMenuOperations.exitOption();
         }
     }
 }
 
 
 public class Main {
-    private static <E extends Enum<E>> E validateOption(String strValue, Class<E> enumClass) {
+    private static <E extends Enum<E>> ArrayList<E> validateOption(String strValue, Class<E> enumClass) {
+        ArrayList<E> returnedValue = new ArrayList<>();
+        E validatedValue;
+
         try {
-            return Enum.valueOf(enumClass, strValue.toUpperCase());
+            validatedValue = Enum.valueOf(enumClass, strValue.toUpperCase());
+            returnedValue.add(validatedValue);
         } catch (IllegalArgumentException ignored) {
             throw new IllegalArgumentException("Unsupported option: " + strValue);
         }
+
+        return returnedValue;
     }
 
     public static void main(String[] args) {
@@ -114,21 +143,17 @@ public class Main {
 
         while (true) {
             System.out.println("Write action (buy, fill, take, remaining, exit):");
-            String mainMenuOption = scanner.nextLine();
+            String enteredOption = scanner.nextLine();
 
-            MainMenuOption validatedValue;
+            ArrayList<MainMenuOption> mainMenuOption = validateOption(enteredOption, MainMenuOption.class);
 
-            try {
-                validatedValue = validateOption(mainMenuOption, MainMenuOption.class);
-            } catch (IllegalArgumentException exception) {
-                System.out.println(exception.getLocalizedMessage());
-                System.out.println();
+            if (mainMenuOption.isEmpty()) {
                 continue;
             }
 
             CoffeeMachine coffeeMachine = new CoffeeMachine();
 
-            MainMenuProcessor.processMainMenu(coffeeMachine, validatedValue);
+            MainMenuProcessor.processMainMenu(coffeeMachine, mainMenuOption.getFirst());
         }
     }
 }
