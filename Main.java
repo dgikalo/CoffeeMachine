@@ -6,8 +6,11 @@ import java.util.EnumMap;
 import java.util.Scanner;
 
 
-
-
+enum Recipe {
+    ESPRESSO,
+    LATTE,
+    CAPPUCCINO
+}
 
 
 enum Resource {
@@ -16,6 +19,57 @@ enum Resource {
     COFFEE_BEANS,
     CUPS,
     MONEY
+}
+
+
+class Coffee {
+    protected EnumMap<Resource, Integer> coffee;
+
+    public int getWaterAmount() {
+        return coffee.get(Resource.WATER);
+    }
+
+    public int getMilkAmount() {
+        return coffee.get(Resource.MILK);
+    }
+
+    public int getCoffeeBeansAmount() {
+        return coffee.get(Resource.COFFEE_BEANS);
+    }
+
+    public int getMoneyAmount() {
+        return coffee.get(Resource.MONEY);
+    }
+}
+
+
+final class Espresso extends Coffee {
+    public Espresso() {
+        coffee.put(Resource.WATER, 250);
+        coffee.put(Resource.MILK, 0);
+        coffee.put(Resource.COFFEE_BEANS, 16);
+        coffee.put(Resource.MONEY, 4);
+    }
+}
+
+
+final class Latte extends Coffee {
+    public Latte() {
+        coffee.put(Resource.WATER, 350);
+        coffee.put(Resource.MILK, 75);
+        coffee.put(Resource.COFFEE_BEANS, 20);
+        coffee.put(Resource.MONEY, 7);
+    }
+}
+
+
+final class Cappuccino extends Coffee {
+    public Cappuccino() {
+        coffee.put(Resource.WATER, 200);
+        coffee.put(Resource.MILK, 100);
+        coffee.put(Resource.COFFEE_BEANS, 12);
+        coffee.put(Resource.MONEY, 6);
+    }
 }
 
 
