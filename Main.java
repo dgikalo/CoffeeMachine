@@ -25,7 +25,7 @@ enum Resource {
 
 
 final class CoffeeMachine {
-    private static EnumMap<Resource, Integer> resources;
+    private final EnumMap<Resource, Integer> resources;
 
     public CoffeeMachine() {
         resources = new EnumMap<>(Resource.class);
@@ -36,65 +36,64 @@ final class CoffeeMachine {
         resources.put(Resource.MONEY, 550);
     }
 
-    public Integer getWaterAmount() {
-        return resources.get(Resource.WATER);
+    public int getWaterAmount() {
+        return this.resources.get(Resource.WATER);
     }
 
     public void updateWaterAmount(int value) {
-        resources.put(Resource.WATER, value);
+        this.resources.put(Resource.WATER, value);
     }
 
-    public Integer getMilkAmount() {
-        return resources.get(Resource.MILK);
+    public int getMilkAmount() {
+        return this.resources.get(Resource.MILK);
     }
 
     public void updateMilkAmount(int value) {
-        resources.put(Resource.MILK, value);
+        this.resources.put(Resource.MILK, value);
     }
 
-    public Integer getCoffeeBeansAmount() {
-        return resources.get(Resource.COFFEE_BEANS);
+    public int getCoffeeBeansAmount() {
+        return this.resources.get(Resource.COFFEE_BEANS);
     }
 
     public void updateCoffeeBeansAmount(int value) {
-        resources.put(Resource.COFFEE_BEANS, value);
+        this.resources.put(Resource.COFFEE_BEANS, value);
     }
 
-    public Integer getDisposableCupsNumber() {
-        return resources.get(Resource.CUPS);
+    public int getDisposableCupsNumber() {
+        return this.resources.get(Resource.CUPS);
     }
 
     public void updateDisposableCupsNumber(int value) {
-        resources.put(Resource.CUPS, value);
+        this.resources.put(Resource.CUPS, value);
     }
 
-    public Integer getMoneyAmount() {
-        return resources.get(Resource.MONEY);
+    public int getMoneyAmount() {
+        return this.resources.get(Resource.MONEY);
     }
 
-    public Integer updateMoneyAmount(int value) {
-        resources.put(Resource.MONEY, value);
+    public void updateMoneyAmount(int value) {
+        this.resources.put(Resource.MONEY, value);
     }
 
     public void displayStatus() {
         System.out.println("The coffee machine has:");
-        System.out.printf("%d ml of water", getWaterAmount());
-        System.out.printf("%d ml of milk", getMilkAmount());
-        System.out.printf("%d g of coffee beans", getCoffeeBeansAmount());
-        System.out.printf("% disposable cups", getDisposableCupsNumber());
-        System.out.printf("$%d of money", getMoneyAmount());
+        System.out.printf("%d ml of water\n", this.getWaterAmount());
+        System.out.printf("%d ml of milk\n", this.getMilkAmount());
+        System.out.printf("%d g of coffee beans\n", this.getCoffeeBeansAmount());
+        System.out.printf("%d disposable cups\n", this.getDisposableCupsNumber());
+        System.out.printf("$%d of money\n", this.getMoneyAmount());
     }
 }
 
 
 final class MainMenuProcessor {
-
-    public static void processMainMenu(MainMenuOption option) {
+    public static void processMainMenu(CoffeeMachine machine, MainMenuOption option) {
         switch (option) {
-            case BUY -> System.out.println("Buy");
-            case FILL -> System.out.println("Fill");
-            case TAKE -> System.out.println("Take");
-            case REMAINING -> System.out.println("Remaining");
+            case BUY -> System.out.println("> Buy");
+            case FILL -> System.out.println(">> Fill");
+            case TAKE -> System.out.println(">>> Take");
+            case REMAINING -> machine.displayStatus();
             case EXIT -> System.exit(0);
         }
     }
@@ -112,9 +111,8 @@ public class Main {
 
     public static void main(String[] args) {
         Scanner scanner = new Scanner(System.in);
-        boolean is_exit = false;
 
-        while (!is_exit) {
+        while (true) {
             System.out.println("Write action (buy, fill, take, remaining, exit):");
             String mainMenuOption = scanner.nextLine();
 
@@ -124,15 +122,13 @@ public class Main {
                 validatedValue = validateOption(mainMenuOption, MainMenuOption.class);
             } catch (IllegalArgumentException exception) {
                 System.out.println(exception.getLocalizedMessage());
+                System.out.println();
                 continue;
             }
 
-            System.out.println(validatedValue);
-            System.out.println();
+            CoffeeMachine coffeeMachine = new CoffeeMachine();
 
-            if (validatedValue.equals(MainMenuOption.EXIT)) {
-                return;
-            }
+            MainMenuProcessor.processMainMenu(coffeeMachine, validatedValue);
         }
     }
 }
