@@ -130,30 +130,23 @@ final class CoffeeMachine {
         this.setMoneyAmount(this.getMoneyAmount() + coffee.getMoneyAmount());
     }
 
-    public boolean checkResourceAvailability(Coffee coffee) {
-        boolean isResourceEnough = true;
+    public void checkResourceAvailability(Coffee coffee) throws NotEnoughResourceException {
 
         if (this.getWaterAmount() < coffee.getWaterAmount()) {
-            System.out.println(warningMessage(Resource.WATER));
-            isResourceEnough = false;
+            throw new NotEnoughResourceException(warningMessage(Resource.WATER));
         }
 
-        if (this.getMilkAmount() < coffee.getMilkAmount() && isResourceEnough) {
-            System.out.println(warningMessage(Resource.MILK));
-            isResourceEnough = false;
+        if (this.getMilkAmount() < coffee.getMilkAmount()) {
+            throw new NotEnoughResourceException(warningMessage(Resource.MILK));
         }
 
-        if (this.getCoffeeBeansAmount() < coffee.getCoffeeBeansAmount() && isResourceEnough) {
-            System.out.println(warningMessage(Resource.COFFEE_BEANS));
-            isResourceEnough = false;
+        if (this.getCoffeeBeansAmount() < coffee.getCoffeeBeansAmount()) {
+            throw new NotEnoughResourceException(warningMessage(Resource.COFFEE_BEANS));
         }
 
-        if (this.getDisposableCupsNumber() == 0 && isResourceEnough) {
-            System.out.println(warningMessage(Resource.CUPS));
-            isResourceEnough = false;
+        if (this.getDisposableCupsNumber() == 0) {
+            throw new NotEnoughResourceException(warningMessage(Resource.CUPS));
         }
-
-        return isResourceEnough;
     }
 
     public void displayStatus() {
@@ -192,43 +185,26 @@ final class MainMenuOperations {
 
         System.out.println(buyOptionMessage);
 
-        String readValue = DataProcessor.readValue();
-        int recipeOption = Integer.parseInt(readValue);
+        String buyOptionValue = DataProcessor.readValue();
+        Coffee coffee;
 
-        switch (recipeOption) {
-            case 1 -> {
-                Coffee espresso = new Espresso();
-
-                if (!machine.checkResourceAvailability(espresso)) {
-                    isPurchaseSuccess = false;
-                    break;
-                }
-
-                machine.updateMachineResources(espresso);
-            }
-
-            case 2 -> {
-                Coffee latte = new Latte();
-
-                if (!machine.checkResourceAvailability(latte)) {
-                    isPurchaseSuccess = false;
-                    break;
-                }
-
-                machine.updateMachineResources(latte);
-            }
-
-            case 3 -> {
-                Coffee cappuccino = new Cappuccino();
-
-                if (!machine.checkResourceAvailability(cappuccino)) {
-                    isPurchaseSuccess = false;
-                    break;
-                }
-
-                machine.updateMachineResources(cappuccino);
+        switch (buyOptionValue) {
+            case "1" -> coffee = new Espresso();
+            case "2" -> coffee = new Latte();
+            case "3" -> coffee = new Cappuccino();
+            default -> {
+                return false;
             }
         }
+
+        try {
+            machine.checkResourceAvailability(coffee);
+        } catch (NotEnoughResourceException notEnoughResourceException) {
+            System.out.println(notEnoughResourceException.getLocalizedMessage());
+            return false;
+        }
+
+        machine.updateMachineResources(coffee);
 
         return isPurchaseSuccess;
     }
@@ -342,5 +318,12 @@ final class DataProcessor {
         }
 
         return returnedValue;
+    }
+}
+
+
+final class NotEnoughResourceException extends Exception {
+    public NotEnoughResourceException(String message) {
+        super(message);
     }
 }
