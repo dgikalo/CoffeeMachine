@@ -184,7 +184,14 @@ final class MainMenuOperations {
     public static boolean buyOption(CoffeeMachine machine) {
         boolean isPurchaseSuccess = true;
 
-        System.out.println("What do you want to buy? 1 - espresso, 2 - latte, 3 - cappuccino, back - to main menu:");
+        String buyOptionMessage = "What do you want to buy? " +
+                                  "1 - espresso, " +
+                                  "2 - latte, " +
+                                  "3 - cappuccino, " +
+                                  "back - to main menu:";
+
+        System.out.println(buyOptionMessage);
+
         String readValue = DataProcessor.readValue();
         int recipeOption = Integer.parseInt(readValue);
 
@@ -227,27 +234,27 @@ final class MainMenuOperations {
     }
 
     public static void fillOption(CoffeeMachine machine) {
-        int resourceValue;
+        int resourceIntValue;
 
         System.out.println("Write how many ml of water you want to add:");
-        resourceValue = Integer.parseInt(DataProcessor.readValue());
+        resourceIntValue = Integer.parseInt(DataProcessor.readValue());
 
-        machine.setWaterAmount(machine.getWaterAmount() + resourceValue);
+        machine.setWaterAmount(machine.getWaterAmount() + resourceIntValue);
 
         System.out.println("Write how many ml of milk you want to add:");
-        resourceValue = Integer.parseInt(DataProcessor.readValue());
+        resourceIntValue = Integer.parseInt(DataProcessor.readValue());
 
-        machine.setMilkAmount(machine.getMilkAmount() + resourceValue);
+        machine.setMilkAmount(machine.getMilkAmount() + resourceIntValue);
 
         System.out.println("Write how many grams of coffee beans you want to add:");
-        resourceValue = Integer.parseInt(DataProcessor.readValue());
+        resourceIntValue = Integer.parseInt(DataProcessor.readValue());
 
-        machine.setCoffeeBeansAmount(machine.getCoffeeBeansAmount() + resourceValue);
+        machine.setCoffeeBeansAmount(machine.getCoffeeBeansAmount() + resourceIntValue);
 
         System.out.println("Write how many disposable cups you want to add:");
-        resourceValue = Integer.parseInt(DataProcessor.readValue());
+        resourceIntValue = Integer.parseInt(DataProcessor.readValue());
 
-        machine.setDisposableCupsNumber(machine.getDisposableCupsNumber() + resourceValue);
+        machine.setDisposableCupsNumber(machine.getDisposableCupsNumber() + resourceIntValue);
     }
 
     public static void takeOption(CoffeeMachine machine) {
@@ -278,6 +285,8 @@ final class MainMenuProcessor {
             case REMAINING -> MainMenuOperations.remainingOption(machine);
             case EXIT -> MainMenuOperations.exitOption();
         }
+
+        System.out.println();
     }
 }
 
@@ -287,8 +296,7 @@ public class Main {
         CoffeeMachine coffeeMachine = new CoffeeMachine();
 
         while (true) {
-            System.out.println("Write action (buy, fill, take, remaining, exit):");
-            String enteredOption = DataProcessor.readValue();
+            String enteredOption = DataProcessor.readValue("Write action (buy, fill, take, remaining, exit):");
 
             ArrayList<MainMenuOption> mainMenuOption;
 
@@ -299,7 +307,7 @@ public class Main {
                 continue;
             }
 
-            MainMenuProcessor.processMainMenu(coffeeMachine, mainMenuOption.getFirst());
+            MainMenuProcessor.processMainMenu(coffeeMachine, mainMenuOption.get(0));
         }
     }
 }
@@ -310,6 +318,16 @@ final class DataProcessor {
 
     public static String readValue() {
         return scanner.nextLine();
+    }
+
+    public static String readValue(String string) {
+        System.out.println(string);
+
+        String readValue = scanner.nextLine();
+
+        System.out.println();
+
+        return readValue;
     }
 
     public static <E extends Enum<E>> ArrayList<E> validateOption(String strValue, Class<E> enumClass) {
