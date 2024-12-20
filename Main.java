@@ -132,29 +132,41 @@ final class CoffeeMachine {
 
     public boolean checkResourceAvailability(Coffee coffee) {
         boolean isResourceEnough = true;
-        String warningMessage = "Sorry, not enough ";
 
         if (this.getWaterAmount() < coffee.getWaterAmount()) {
-            System.out.println(warningMessage + Resource.WATER.toString().toLowerCase() + "!");
+            System.out.println(warningMessage(Resource.WATER));
             isResourceEnough = false;
         }
 
         if (this.getMilkAmount() < coffee.getMilkAmount() && isResourceEnough) {
-            System.out.println(warningMessage + Resource.MILK.toString().toLowerCase() + "!");
+            System.out.println(warningMessage(Resource.MILK));
             isResourceEnough = false;
         }
 
         if (this.getCoffeeBeansAmount() < coffee.getCoffeeBeansAmount() && isResourceEnough) {
-            System.out.println(warningMessage + Resource.COFFEE_BEANS.toString().toLowerCase() + "!");
+            System.out.println(warningMessage(Resource.COFFEE_BEANS));
             isResourceEnough = false;
         }
 
         if (this.getDisposableCupsNumber() == 0 && isResourceEnough) {
-            System.out.println(warningMessage + Resource.CUPS.toString().toLowerCase() + "!");
+            System.out.println(warningMessage(Resource.CUPS));
             isResourceEnough = false;
         }
 
         return isResourceEnough;
+    }
+
+    public void displayStatus() {
+        System.out.println("The coffee machine has:");
+        System.out.printf("%d ml of water\n", this.getWaterAmount());
+        System.out.printf("%d ml of milk\n", this.getMilkAmount());
+        System.out.printf("%d g of coffee beans\n", this.getCoffeeBeansAmount());
+        System.out.printf("%d disposable cups\n", this.getDisposableCupsNumber());
+        System.out.printf("$%d of money\n", this.getMoneyAmount());
+    }
+
+    private String warningMessage(Resource resource) {
+        return "Sorry, not enough " + resource.toString().toLowerCase() + "!";
     }
 }
 
@@ -239,16 +251,12 @@ final class MainMenuOperations {
     }
 
     public static void takeOption(CoffeeMachine machine) {
+        System.out.printf("I gave you $%d\n", machine.getMoneyAmount());
         machine.setMoneyAmount(0);
     }
 
     public static void remainingOption(CoffeeMachine machine) {
-        System.out.println("The coffee machine has:");
-        System.out.printf("%d ml of water\n", machine.getWaterAmount());
-        System.out.printf("%d ml of milk\n", machine.getMilkAmount());
-        System.out.printf("%d g of coffee beans\n", machine.getCoffeeBeansAmount());
-        System.out.printf("%d disposable cups\n", machine.getDisposableCupsNumber());
-        System.out.printf("$%d of money\n", machine.getMoneyAmount());
+        machine.displayStatus();
     }
 
     public static void exitOption() {
@@ -276,6 +284,8 @@ final class MainMenuProcessor {
 
 public class Main {
     public static void main(String[] args) {
+        CoffeeMachine coffeeMachine = new CoffeeMachine();
+
         while (true) {
             System.out.println("Write action (buy, fill, take, remaining, exit):");
             String enteredOption = DataProcessor.readValue();
@@ -288,8 +298,6 @@ public class Main {
                 System.out.println(exception.getLocalizedMessage());
                 continue;
             }
-
-            CoffeeMachine coffeeMachine = new CoffeeMachine();
 
             MainMenuProcessor.processMainMenu(coffeeMachine, mainMenuOption.getFirst());
         }
