@@ -1,9 +1,7 @@
 package org.example;
 
 
-import java.util.ArrayList;
-import java.util.EnumMap;
-import java.util.Scanner;
+import java.util.*;
 
 
 enum Resource {
@@ -86,32 +84,16 @@ final class CoffeeMachine {
         return this.resources.get(Resource.WATER);
     }
 
-    public void setWaterAmount(int value) {
-        this.resources.put(Resource.WATER, value);
-    }
-
     public int getMilkAmount() {
         return this.resources.get(Resource.MILK);
-    }
-
-    public void setMilkAmount(int value) {
-        this.resources.put(Resource.MILK, value);
     }
 
     public int getCoffeeBeansAmount() {
         return this.resources.get(Resource.COFFEE_BEANS);
     }
 
-    public void setCoffeeBeansAmount(int value) {
-        this.resources.put(Resource.COFFEE_BEANS, value);
-    }
-
     public int getDisposableCupsNumber() {
         return this.resources.get(Resource.CUPS);
-    }
-
-    public void setDisposableCupsNumber(int value) {
-        this.resources.put(Resource.CUPS, value);
     }
 
     public int getMoneyAmount() {
@@ -122,16 +104,11 @@ final class CoffeeMachine {
         this.resources.put(Resource.MONEY, value);
     }
 
-    public void updateMachineResources(Coffee coffee) {
-        this.setWaterAmount(this.getWaterAmount() - coffee.getWaterAmount());
-        this.setMilkAmount(this.getMilkAmount() - coffee.getMilkAmount());
-        this.setCoffeeBeansAmount(this.getCoffeeBeansAmount() - coffee.getCoffeeBeansAmount());
-        this.setDisposableCupsNumber(this.getDisposableCupsNumber() - 1);
-        this.setMoneyAmount(this.getMoneyAmount() + coffee.getMoneyAmount());
+    public void updateResourceAmount(Resource resource, int value) {
+        this.resources.put(resource, this.resources.get(resource) + value);
     }
 
     public void checkResourceAvailability(Coffee coffee) throws NotEnoughResourceException {
-
         if (this.getWaterAmount() < coffee.getWaterAmount()) {
             throw new NotEnoughResourceException(warningMessage(Resource.WATER));
         }
@@ -161,15 +138,6 @@ final class CoffeeMachine {
     private String warningMessage(Resource resource) {
         return "Sorry, not enough " + resource.toString().toLowerCase() + "!";
     }
-}
-
-
-enum MainMenuOption {
-    BUY,
-    FILL,
-    TAKE,
-    REMAINING,
-    EXIT
 }
 
 
@@ -204,33 +172,26 @@ final class MainMenuOperations {
             return false;
         }
 
-        machine.updateMachineResources(coffee);
+        machine.updateResourceAmount(Resource.WATER, -coffee.getWaterAmount());
+        machine.updateResourceAmount(Resource.MILK, -coffee.getMilkAmount());
+        machine.updateResourceAmount(Resource.COFFEE_BEANS, -coffee.getCoffeeBeansAmount());
+        machine.updateResourceAmount(Resource.CUPS, -1);
+        machine.updateResourceAmount(Resource.MONEY, coffee.getMoneyAmount());
 
         return isPurchaseSuccess;
     }
 
     public static void fillOption(CoffeeMachine machine) {
-        int resourceIntValue;
+        Map<Resource, String> filledResources = new LinkedHashMap<>();
+        filledResources.put(Resource.WATER, "Write how many ml of water you want to add:");
+        filledResources.put(Resource.MILK, "Write how many ml of milk you want to add:");
+        filledResources.put(Resource.COFFEE_BEANS, "Write how many grams of coffee beans you want to add:");
+        filledResources.put(Resource.CUPS, "Write how many disposable cups you want to add:");
 
-        System.out.println("Write how many ml of water you want to add:");
-        resourceIntValue = Integer.parseInt(DataProcessor.readValue());
-
-        machine.setWaterAmount(machine.getWaterAmount() + resourceIntValue);
-
-        System.out.println("Write how many ml of milk you want to add:");
-        resourceIntValue = Integer.parseInt(DataProcessor.readValue());
-
-        machine.setMilkAmount(machine.getMilkAmount() + resourceIntValue);
-
-        System.out.println("Write how many grams of coffee beans you want to add:");
-        resourceIntValue = Integer.parseInt(DataProcessor.readValue());
-
-        machine.setCoffeeBeansAmount(machine.getCoffeeBeansAmount() + resourceIntValue);
-
-        System.out.println("Write how many disposable cups you want to add:");
-        resourceIntValue = Integer.parseInt(DataProcessor.readValue());
-
-        machine.setDisposableCupsNumber(machine.getDisposableCupsNumber() + resourceIntValue);
+        for (Map.Entry<Resource, String> value : filledResources.entrySet()) {
+            System.out.println(value.getValue());
+            machine.updateResourceAmount(value.getKey(), Integer.parseInt(DataProcessor.readValue()));
+        }
     }
 
     public static void takeOption(CoffeeMachine machine) {
@@ -249,17 +210,18 @@ final class MainMenuOperations {
 
 
 final class MainMenuProcessor {
-    public static void processMainMenu(CoffeeMachine machine, MainMenuOption option) {
-        switch (option) {
-            case BUY -> {
+    public static void processMainMenu(CoffeeMachine machine, String value) {
+        switch (value) {
+            case "buy" -> {
                 if (MainMenuOperations.buyOption(machine)) {
                     System.out.println("I have enough resources, making you a coffee!");
                 }
             }
-            case FILL -> MainMenuOperations.fillOption(machine);
-            case TAKE -> MainMenuOperations.takeOption(machine);
-            case REMAINING -> MainMenuOperations.remainingOption(machine);
-            case EXIT -> MainMenuOperations.exitOption();
+            case "fill" -> MainMenuOperations.fillOption(machine);
+            case "take" -> MainMenuOperations.takeOption(machine);
+            case "remaining" -> MainMenuOperations.remainingOption(machine);
+            case "exit" -> MainMenuOperations.exitOption();
+            default -> throw new UnsupportedOperationException("Unsupported operation: " + value);
         }
 
         System.out.println();
@@ -272,18 +234,14 @@ public class Main {
         CoffeeMachine coffeeMachine = new CoffeeMachine();
 
         while (true) {
-            String enteredOption = DataProcessor.readValue("Write action (buy, fill, take, remaining, exit):");
-
-            ArrayList<MainMenuOption> mainMenuOption;
+            String readStringValue = DataProcessor.readValue("Write action (buy, fill, take, remaining, exit):");
 
             try {
-                mainMenuOption = DataProcessor.validateOption(enteredOption, MainMenuOption.class);
-            } catch (IllegalArgumentException exception) {
+                MainMenuProcessor.processMainMenu(coffeeMachine, readStringValue);
+            } catch (UnsupportedOperationException exception) {
                 System.out.println(exception.getLocalizedMessage());
-                continue;
+                System.out.println();
             }
-
-            MainMenuProcessor.processMainMenu(coffeeMachine, mainMenuOption.get(0));
         }
     }
 }
@@ -304,20 +262,6 @@ final class DataProcessor {
         System.out.println();
 
         return readValue;
-    }
-
-    public static <E extends Enum<E>> ArrayList<E> validateOption(String strValue, Class<E> enumClass) {
-        ArrayList<E> returnedValue = new ArrayList<>();
-        E validatedValue;
-
-        try {
-            validatedValue = Enum.valueOf(enumClass, strValue.toUpperCase());
-            returnedValue.add(validatedValue);
-        } catch (IllegalArgumentException ignored) {
-            throw new IllegalArgumentException("Unsupported option: " + strValue);
-        }
-
-        return returnedValue;
     }
 }
 
