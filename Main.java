@@ -70,6 +70,7 @@ final class Cappuccino extends Coffee {
 
 final class CoffeeMachine {
     private final EnumMap<Resource, Integer> resources;
+    private int runsNumber = 0;
 
     public CoffeeMachine() {
         this.resources = new EnumMap<>(Resource.class);
@@ -102,6 +103,18 @@ final class CoffeeMachine {
 
     public void setMoneyAmount(int value) {
         this.resources.put(Resource.MONEY, value);
+    }
+
+    public boolean isCleaningNecessary() {
+        return this.runsNumber == 10;
+    }
+
+    public void updateCleanStatus() {
+        ++this.runsNumber;
+    }
+
+    public void resetCleanStatus() {
+        this.runsNumber = 0;
     }
 
     public void updateResourceAmount(Resource resource, int value) {
@@ -143,7 +156,10 @@ final class CoffeeMachine {
 
 final class MainMenuOperations {
     public static boolean buyOption(CoffeeMachine machine) {
-        boolean isPurchaseSuccess = true;
+        if (machine.isCleaningNecessary()) {
+            System.out.println("I need cleaning!");
+            return false;
+        }
 
         String buyOptionMessage = "What do you want to buy? " +
                                   "1 - espresso, " +
@@ -177,8 +193,9 @@ final class MainMenuOperations {
         machine.updateResourceAmount(Resource.COFFEE_BEANS, -coffee.getCoffeeBeansAmount());
         machine.updateResourceAmount(Resource.CUPS, -1);
         machine.updateResourceAmount(Resource.MONEY, coffee.getMoneyAmount());
+        machine.updateCleanStatus();
 
-        return isPurchaseSuccess;
+        return true;
     }
 
     public static void fillOption(CoffeeMachine machine) {
@@ -197,6 +214,11 @@ final class MainMenuOperations {
     public static void takeOption(CoffeeMachine machine) {
         System.out.printf("I gave you $%d\n", machine.getMoneyAmount());
         machine.setMoneyAmount(0);
+    }
+
+    public static void cleanOption(CoffeeMachine machine) {
+        System.out.println("I have been cleaned!");
+        machine.resetCleanStatus();
     }
 
     public static void remainingOption(CoffeeMachine machine) {
@@ -219,6 +241,7 @@ final class MainMenuProcessor {
             }
             case "fill" -> MainMenuOperations.fillOption(machine);
             case "take" -> MainMenuOperations.takeOption(machine);
+            case "clean" -> MainMenuOperations.cleanOption(machine);
             case "remaining" -> MainMenuOperations.remainingOption(machine);
             case "exit" -> MainMenuOperations.exitOption();
             default -> throw new UnsupportedOperationException("Unsupported operation: " + value);
@@ -234,7 +257,9 @@ public class Main {
         CoffeeMachine coffeeMachine = new CoffeeMachine();
 
         while (true) {
-            String readStringValue = DataProcessor.readValue("Write action (buy, fill, take, remaining, exit):");
+            String readStringValue = DataProcessor.readValue(
+                    "Write action (buy, fill, take, clean, remaining, exit):"
+            );
 
             try {
                 MainMenuProcessor.processMainMenu(coffeeMachine, readStringValue);
